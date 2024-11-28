@@ -59,8 +59,9 @@
     <div id="projectContainer"></div>
   </div>
 
-  <script src="https://unpkg.com/scratch-vm@0.2.1/dist/scratch-vm.min.js"></script>
-  <script src="https://unpkg.com/scratch-render@0.3.1/dist/scratch-render.min.js"></script>
+  <!-- Corrigido para carregar as versões corretas das bibliotecas -->
+  <script src="https://cdn.jsdelivr.net/npm/scratch-vm@0.2.1/dist/scratch-vm.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/scratch-render@0.3.1/dist/scratch-render.min.js"></script>
   
   <script>
     function loadProject() {
@@ -79,8 +80,8 @@
               fetch(sb3Url)
                 .then(response => response.arrayBuffer())
                 .then(sb3Data => {
-                  const vm = new window.ScratchVM();
-                  const renderer = new window.ScratchRender();
+                  const vm = new ScratchVM();  // Instanciando corretamente
+                  const renderer = new ScratchRender();
                   
                   vm.attachRenderer(renderer);
                   
