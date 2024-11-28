@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scratch Project Viewer</title>
+  <title>Visualizador de Projetos Scratch</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -41,12 +41,11 @@
     button:hover {
       background-color: #45a049;
     }
-    #projectContainer {
+    iframe {
       margin-top: 20px;
-      width: 500px;
-      height: 400px;
-      border: 1px solid #ddd;
-      background-color: #fff;
+      width: 485px;
+      height: 402px;
+      border: none;
     }
   </style>
 </head>
@@ -56,66 +55,17 @@
     <input type="text" id="projectId" placeholder="Digite o ID do projeto do Scratch" />
     <button onclick="loadProject()">Carregar Projeto</button>
     <br />
-    <div id="projectContainer"></div>
+    <iframe id="projectIframe" src="" title="Scratch Project Viewer"></iframe>
   </div>
 
-  <!-- Bibliotecas do Scratch -->
-  <script src="https://cdn.jsdelivr.net/npm/scratch-vm/dist/web.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/scratch-render/dist/web.min.js"></script>
   <script>
-    // Função para carregar o projeto
-    async function loadProject() {
+    function loadProject() {
       const projectId = document.getElementById('projectId').value;
-      if (!projectId) {
+      if (projectId) {
+        const iframe = document.getElementById('projectIframe');
+        iframe.src = `https://scratch.mit.edu/projects/${projectId}/embed`;
+      } else {
         alert('Por favor, insira o ID do projeto!');
-        return;
-      }
-
-      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-      const projectUrl = `https://api.scratch.mit.edu/projects/${projectId}`;
-
-      try {
-        // Obter dados do projeto
-        const projectResponse = await fetch(proxyUrl + projectUrl);
-        const projectData = await projectResponse.json();
-
-        if (!projectData.project_token) {
-          alert('Projeto não encontrado ou inválido!');
-          return;
-        }
-
-        // Obter o arquivo SB3 do projeto
-        const sb3Url = `https://projects.scratch.mit.edu/${projectData.project_token}`;
-        const sb3Response = await fetch(sb3Url);
-        const sb3Data = await sb3Response.arrayBuffer();
-
-        // Inicializar ScratchVM e Renderer
-        const ScratchVM = window.vm || window.ScratchVM; // Verificação para diferentes nomes
-        const ScratchRender = window.ScratchRender;
-
-        if (!ScratchVM || !ScratchRender) {
-          alert('As bibliotecas do Scratch não foram carregadas corretamente.');
-          return;
-        }
-
-        const vm = new ScratchVM();
-        const renderer = new ScratchRender();
-
-        vm.attachRenderer(renderer);
-
-        // Carregar o projeto no ScratchVM
-        await vm.loadProject(sb3Data);
-
-        // Exibir o projeto
-        const container = document.getElementById('projectContainer');
-        container.innerHTML = '';
-        container.appendChild(renderer.canvas);
-
-        // Iniciar o projeto
-        vm.start();
-      } catch (error) {
-        alert('Erro ao carregar o arquivo SB3! ' + error);
-        console.error('Detalhes do erro:', error);
       }
     }
   </script>
