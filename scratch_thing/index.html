@@ -59,11 +59,12 @@
     <div id="projectContainer"></div>
   </div>
 
-  <!-- Corrigido para carregar as versões corretas das bibliotecas -->
+  <!-- Carregar a biblioteca ScratchVM de forma assíncrona -->
   <script src="https://cdn.jsdelivr.net/npm/scratch-vm@0.2.1/dist/scratch-vm.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/scratch-render@0.3.1/dist/scratch-render.min.js"></script>
   
   <script>
+    // Função para carregar o projeto
     function loadProject() {
       const projectId = document.getElementById('projectId').value;
       if (projectId) {
@@ -80,8 +81,9 @@
               fetch(sb3Url)
                 .then(response => response.arrayBuffer())
                 .then(sb3Data => {
-                  const vm = new ScratchVM();  // Instanciando corretamente
-                  const renderer = new ScratchRender();
+                  // Instanciando a VM corretamente após o carregamento da biblioteca
+                  const vm = new window.ScratchVM();  // Acessando a ScratchVM corretamente
+                  const renderer = new window.ScratchRender();
                   
                   vm.attachRenderer(renderer);
                   
