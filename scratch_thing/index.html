@@ -71,25 +71,39 @@
         const projectUrl = `https://api.scratch.mit.edu/projects/${projectId}`;
         
         fetch(proxyUrl + projectUrl)
-          .then(response => response.json())
-          .then(data => {
-            const vm = new window.ScratchVM();
-            const renderer = new window.ScratchRender();
-            
-            vm.attachRenderer(renderer);
-            
-            // Carregar o conteúdo do projeto
-            vm.loadProject(data);
-            
-            // Exibir o projeto na tela
-            const container = document.getElementById('projectContainer');
-            container.innerHTML = '';  // Limpar conteúdo anterior
-            container.appendChild(renderer.canvas);
-            
-            // Iniciar a execução do projeto
-            vm.start();
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Erro na resposta: ${response.statusText}`);
+            }
+            return response.text();  // Tenta pegar a resposta como texto
           })
-          .catch(error => alert('Erro ao carregar o projeto! ' + error));
+          .then(text => {
+            try {
+              const data = JSON.parse(text);  // Tenta parsear a resposta como JSON
+              const vm = new window.ScratchVM();
+              const renderer = new window.ScratchRender();
+              
+              vm.attachRenderer(renderer);
+              
+              // Carregar o conteúdo do projeto
+              vm.loadProject(data);
+              
+              // Exibir o projeto na tela
+              const container = document.getElementById('projectContainer');
+              container.innerHTML = '';  // Limpar conteúdo anterior
+              container.appendChild(renderer.canvas);
+              
+              // Iniciar a execução do projeto
+              vm.start();
+            } catch (error) {
+              alert('Erro ao interpretar o JSON do projeto. Resposta não é um JSON válido.');
+              console.error('Erro ao interpretar JSON:', error);
+            }
+          })
+          .catch(error => {
+            alert('Erro ao carregar o projeto! ' + error);
+            console.error('Erro:', error);
+          });
       } else {
         alert('Por favor, insira o ID do projeto!');
       }
