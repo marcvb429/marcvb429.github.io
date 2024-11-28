@@ -66,7 +66,11 @@
     function loadProject() {
       const projectId = document.getElementById('projectId').value;
       if (projectId) {
-        fetch(`https://api.scratch.mit.edu/projects/${projectId}`)
+        // Usando um proxy para contornar o problema de CORS
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+        const projectUrl = `https://api.scratch.mit.edu/projects/${projectId}`;
+        
+        fetch(proxyUrl + projectUrl)
           .then(response => response.json())
           .then(data => {
             const vm = new window.ScratchVM();
@@ -85,7 +89,7 @@
             // Iniciar a execução do projeto
             vm.start();
           })
-          .catch(error => alert('Erro ao carregar o projeto!'));
+          .catch(error => alert('Erro ao carregar o projeto! ' + error));
       } else {
         alert('Por favor, insira o ID do projeto!');
       }
