@@ -60,8 +60,8 @@
   </div>
 
   <!-- Bibliotecas do Scratch -->
-  <script src="https://cdn.jsdelivr.net/npm/scratch-vm"></script>
-  <script src="https://cdn.jsdelivr.net/npm/scratch-render"></script>
+  <script src="https://cdn.jsdelivr.net/npm/scratch-vm/dist/web.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/scratch-render/dist/web.min.js"></script>
   <script>
     // Função para carregar o projeto
     async function loadProject() {
@@ -90,8 +90,13 @@
         const sb3Data = await sb3Response.arrayBuffer();
 
         // Inicializar ScratchVM e Renderer
-        const ScratchVM = window.vm.default || window.vm; // Ajustar para versões modernas
-        const ScratchRender = window.ScratchRender.default || window.ScratchRender;
+        const ScratchVM = window.vm || window.ScratchVM; // Verificação para diferentes nomes
+        const ScratchRender = window.ScratchRender;
+
+        if (!ScratchVM || !ScratchRender) {
+          alert('As bibliotecas do Scratch não foram carregadas corretamente.');
+          return;
+        }
 
         const vm = new ScratchVM();
         const renderer = new ScratchRender();
