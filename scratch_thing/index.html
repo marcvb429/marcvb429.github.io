@@ -59,56 +59,58 @@
     <div id="projectContainer"></div>
   </div>
 
-  <!-- Carregar a biblioteca ScratchVM de forma assíncrona -->
-  <script src="https://cdn.jsdelivr.net/npm/scratch-vm@0.2.1/dist/scratch-vm.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/scratch-render@0.3.1/dist/scratch-render.min.js"></script>
-  
+  <!-- Bibliotecas do Scratch -->
+  <script src="https://cdn.jsdelivr.net/npm/scratch-vm"></script>
+  <script src="https://cdn.jsdelivr.net/npm/scratch-render"></script>
   <script>
     // Função para carregar o projeto
-    function loadProject() {
+    async function loadProject() {
       const projectId = document.getElementById('projectId').value;
-      if (projectId) {
-        // Usando um proxy para contornar o problema de CORS
-        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-        const projectUrl = `https://api.scratch.mit.edu/projects/${projectId}`;
-        
-        fetch(proxyUrl + projectUrl)
-          .then(response => response.json())
-          .then(data => {
-            if (data && data.project_token) {
-              const sb3Url = `https://projects.scratch.mit.edu/${data.project_token}`;
-              
-              fetch(sb3Url)
-                .then(response => response.arrayBuffer())
-                .then(sb3Data => {
-                  // Instanciando a VM corretamente após o carregamento da biblioteca
-                  const vm = new window.ScratchVM();  // Acessando a ScratchVM corretamente
-                  const renderer = new window.ScratchRender();
-                  
-                  vm.attachRenderer(renderer);
-                  
-                  // Carregar o conteúdo do projeto
-                  vm.loadProject(sb3Data);
-                  
-                  // Exibir o projeto na tela
-                  const container = document.getElementById('projectContainer');
-                  container.innerHTML = '';  // Limpar conteúdo anterior
-                  container.appendChild(renderer.canvas);
-                  
-                  // Iniciar a execução do projeto
-                  vm.start();
-                })
-                .catch(error => alert('Erro ao carregar o arquivo SB3! ' + error));
-            } else {
-              alert('Projeto não encontrado ou inválido!');
-            }
-          })
-          .catch(error => {
-            alert('Erro ao carregar o projeto! ' + error);
-            console.error('Erro:', error);
-          });
-      } else {
+      if (!projectId) {
         alert('Por favor, insira o ID do projeto!');
+        return;
+      }
+
+      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+      const projectUrl = `https://api.scratch.mit.edu/projects/${projectId}`;
+
+      try {
+        // Obter dados do projeto
+        const projectResponse = await fetch(proxyUrl + projectUrl);
+        const projectData = await projectResponse.json();
+
+        if (!projectData.project_token) {
+          alert('Projeto não encontrado ou inválido!');
+          return;
+        }
+
+        // Obter o arquivo SB3 do projeto
+        const sb3Url = `https://projects.scratch.mit.edu/${projectData.project_token}`;
+        const sb3Response = await fetch(sb3Url);
+        const sb3Data = await sb3Response.arrayBuffer();
+
+        // Inicializar ScratchVM e Renderer
+        const ScratchVM = window.vm.default || window.vm; // Ajustar para versões modernas
+        const ScratchRender = window.ScratchRender.default || window.ScratchRender;
+
+        const vm = new ScratchVM();
+        const renderer = new ScratchRender();
+
+        vm.attachRenderer(renderer);
+
+        // Carregar o projeto no ScratchVM
+        await vm.loadProject(sb3Data);
+
+        // Exibir o projeto
+        const container = document.getElementById('projectContainer');
+        container.innerHTML = '';
+        container.appendChild(renderer.canvas);
+
+        // Iniciar o projeto
+        vm.start();
+      } catch (error) {
+        alert('Erro ao carregar o arquivo SB3! ' + error);
+        console.error('Detalhes do erro:', error);
       }
     }
   </script>
