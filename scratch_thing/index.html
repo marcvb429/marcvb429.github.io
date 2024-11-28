@@ -71,33 +71,33 @@
         const projectUrl = `https://api.scratch.mit.edu/projects/${projectId}`;
         
         fetch(proxyUrl + projectUrl)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`Erro na resposta: ${response.statusText}`);
-            }
-            return response.text();  // Tenta pegar a resposta como texto
-          })
-          .then(text => {
-            try {
-              const data = JSON.parse(text);  // Tenta parsear a resposta como JSON
-              const vm = new window.ScratchVM(); // Criando instância da ScratchVM
-              const renderer = new window.ScratchRender();
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.project_token) {
+              const sb3Url = `https://projects.scratch.mit.edu/${data.project_token}`;
               
-              vm.attachRenderer(renderer);
-              
-              // Carregar o conteúdo do projeto
-              vm.loadProject(data);
-              
-              // Exibir o projeto na tela
-              const container = document.getElementById('projectContainer');
-              container.innerHTML = '';  // Limpar conteúdo anterior
-              container.appendChild(renderer.canvas);
-              
-              // Iniciar a execução do projeto
-              vm.start();
-            } catch (error) {
-              alert('Erro ao interpretar o JSON do projeto. Resposta não é um JSON válido.');
-              console.error('Erro ao interpretar JSON:', error);
+              fetch(sb3Url)
+                .then(response => response.arrayBuffer())
+                .then(sb3Data => {
+                  const vm = new window.ScratchVM();
+                  const renderer = new window.ScratchRender();
+                  
+                  vm.attachRenderer(renderer);
+                  
+                  // Carregar o conteúdo do projeto
+                  vm.loadProject(sb3Data);
+                  
+                  // Exibir o projeto na tela
+                  const container = document.getElementById('projectContainer');
+                  container.innerHTML = '';  // Limpar conteúdo anterior
+                  container.appendChild(renderer.canvas);
+                  
+                  // Iniciar a execução do projeto
+                  vm.start();
+                })
+                .catch(error => alert('Erro ao carregar o arquivo SB3! ' + error));
+            } else {
+              alert('Projeto não encontrado ou inválido!');
             }
           })
           .catch(error => {
